@@ -1,0 +1,10 @@
+# Optional build-time optimization — commented out because it is unverified
+# on this machine. rust-lld ships with the toolchain (no install needed) and
+# cuts link time from roughly 5s to under 1s, which matters most on the
+# incremental rebuilds you do while iterating.
+#
+# Uncomment to try it. If linking fails, comment it straight back out — this
+# is purely a speed lever and nothing depends on it.
+#
+# [target.x86_64-pc-windows-msvc]
+# linker = "rust-lld.exe"

@@ -1,0 +1,30 @@
+[package]
+name = "md-viewer"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# glow (OpenGL) instead of the default wgpu backend: wgpu pulls in the naga
+# shader compiler and roughly doubles cold build time on Windows MSVC.
+eframe = { version = "0.35", default-features = false, features = [
+    "default_fonts",
+    "glow",
+] }
+egui = "0.35"
+
+# Required for images inside markdown. Without install_image_loaders() at
+# startup they render as broken boxes with no error. Drop this dep and the
+# call in main() if you never embed images — it is the biggest build-time
+# cost here after eframe.
+egui_extras = { version = "0.35", features = ["all_loaders"] }
+
+# Must track the egui version exactly. A mismatch surfaces as conflicting
+# trait impl linker errors, not a readable version complaint.
+egui_commonmark = { version = "0.24", features = ["better_syntax_highlighting"] }
+
+rfd = "0.17"
+
+[profile.release]
+strip = true
+lto = "thin"
+opt-level = "s"
