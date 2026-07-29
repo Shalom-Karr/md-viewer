@@ -413,12 +413,7 @@ impl MdApp {
                 self.mode = self.mode.next();
             }
 
-            let dropped = ctx.input(|i| {
-                i.raw
-                    .dropped_files
-                    .iter()
-                    .find_map(|f| f.path.clone())
-            });
+            let dropped = ctx.input(|i| i.raw.dropped_files.iter().find_map(|f| f.path.clone()));
             if let Some(path) = dropped {
                 self.request_open(Some(path));
             }
@@ -485,11 +480,7 @@ impl MdApp {
                             let selected = self.mode == mode;
                             let button = egui::Button::selectable(selected, mode.label())
                                 .min_size(Vec2::new(58.0, 0.0));
-                            if ui
-                                .add(button)
-                                .on_hover_text("Cycle with Ctrl+E")
-                                .clicked()
-                            {
+                            if ui.add(button).on_hover_text("Cycle with Ctrl+E").clicked() {
                                 self.mode = mode;
                             }
                         }
@@ -539,9 +530,7 @@ impl MdApp {
                         ui.label(RichText::new(self.mode.label()).weak());
                         ui.separator();
                         if self.dirty {
-                            ui.label(
-                                RichText::new("Modified").color(ui.visuals().warn_fg_color),
-                            );
+                            ui.label(RichText::new("Modified").color(ui.visuals().warn_fg_color));
                         } else {
                             ui.label(RichText::new("Saved").weak());
                         }
@@ -572,10 +561,7 @@ impl MdApp {
             }
         }
         match &self.path {
-            Some(p) => (
-                p.display().to_string(),
-                visuals.weak_text_color(),
-            ),
+            Some(p) => (p.display().to_string(), visuals.weak_text_color()),
             None => (
                 if self.raw.is_empty() {
                     "No document".to_owned()
@@ -714,9 +700,7 @@ impl MdApp {
                     .color(ui.visuals().widgets.active.fg_stroke.color),
             );
             ui.add_space(8.0);
-            ui.label(format!(
-                "{name} has been edited. Save before continuing?"
-            ));
+            ui.label(format!("{name} has been edited. Save before continuing?"));
             ui.add_space(18.0);
             ui.horizontal(|ui| {
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
@@ -767,7 +751,12 @@ fn paint_doc_glyph(painter: &egui::Painter, rect: Rect, visuals: &egui::Visuals)
     ];
     painter.add(egui::Shape::convex_polygon(
         outline.clone(),
-        visuals.widgets.noninteractive.bg_stroke.color.gamma_multiply(0.45),
+        visuals
+            .widgets
+            .noninteractive
+            .bg_stroke
+            .color
+            .gamma_multiply(0.45),
         Stroke::NONE,
     ));
     painter.add(egui::Shape::closed_line(outline, stroke));
@@ -783,7 +772,10 @@ fn paint_doc_glyph(painter: &egui::Painter, rect: Rect, visuals: &egui::Visuals)
     for i in 0..3 {
         let y = rect.top() + fold + 18.0 + i as f32 * 13.0;
         let right = rect.right() - if i == 2 { 26.0 } else { 14.0 };
-        painter.line_segment([Pos2::new(rect.left() + 14.0, y), Pos2::new(right, y)], rule);
+        painter.line_segment(
+            [Pos2::new(rect.left() + 14.0, y), Pos2::new(right, y)],
+            rule,
+        );
     }
 }
 
@@ -801,7 +793,8 @@ impl eframe::App for MdApp {
 
         let split = self.mode == Mode::Split && self.has_doc();
         if split {
-            let frame = egui::Frame::central_panel(ui.style()).inner_margin(Margin::symmetric(14, 12));
+            let frame =
+                egui::Frame::central_panel(ui.style()).inner_margin(Margin::symmetric(14, 12));
             egui::Panel::left("source_pane")
                 .resizable(true)
                 .default_size(430.0)
@@ -812,8 +805,7 @@ impl eframe::App for MdApp {
                 });
         }
 
-        let frame =
-            egui::Frame::central_panel(ui.style()).inner_margin(Margin::symmetric(16, 12));
+        let frame = egui::Frame::central_panel(ui.style()).inner_margin(Margin::symmetric(16, 12));
         egui::CentralPanel::default().frame(frame).show(ui, |ui| {
             if !self.has_doc() {
                 self.empty_state(ui);
