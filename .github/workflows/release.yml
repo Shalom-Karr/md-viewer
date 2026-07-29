@@ -1,0 +1,57 @@
+name: Release Build
+
+# Build md-viewer for each platform and attach the binaries to a GitHub Release
+# whenever a v* tag is pushed (or run it by hand).
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows-latest
+            binary: md-viewer.exe
+            asset: md-viewer-windows-x64.exe
+          - platform: ubuntu-22.04
+            binary: md-viewer
+            asset: md-viewer-linux-x64
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust build cache
+        uses: swatinem/rust-cache@v2
+
+      # egui needs X11/xkb headers, and rfd needs GTK for its native file dialogs.
+      - name: Linux system deps
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libxcb-render0-dev libxcb-shape0-dev \
+            libxcb-xfixes0-dev libxkbcommon-dev libssl-dev
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Stage artifact
+        shell: bash
+        run: cp target/release/${{ matrix.binary }} ${{ matrix.asset }}
+
+      - name: Attach to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.asset }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
